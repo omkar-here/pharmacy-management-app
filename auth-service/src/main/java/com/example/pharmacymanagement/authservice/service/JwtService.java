@@ -8,6 +8,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Component;
 
+import com.example.pharmacymanagement.authservice.entity.EmployeeRole;
+
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
@@ -25,15 +27,17 @@ public class JwtService {
     @Value("${refresh.validity}")
     private static int REFRESH_VALIDITY;
 
-    public String createAuthToken(String username) {
+    public String createAuthToken(String username, Integer id, EmployeeRole role) {
         Map<String, Object> claims = new HashMap<>();
         claims.put("username", username);
+        claims.put("id", id);
+        claims.put("role", role);
         return generateToken(claims, false);
     }
 
-    public String createRefreshToken(String username) {
+    public String createRefreshToken(Integer id) {
         Map<String, Object> claims = new HashMap<>();
-        claims.put("username", username);
+        claims.put("id", id);
         return generateToken(claims, true);
     }
 
