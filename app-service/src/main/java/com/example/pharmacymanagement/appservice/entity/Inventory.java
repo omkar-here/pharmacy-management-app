@@ -23,13 +23,13 @@ public class Inventory {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
     @ManyToOne
-    @JoinColumn
+    @JoinColumn(name = "medicine_id")
     private Medicine medicineId;
     private Integer batchNumber;
     private Integer quantity;
     private Double price;
     private LocalDate expiryDate;
     @ManyToOne
-    @JoinColumn
+    @JoinColumn(name = "seller_id")
     private Client sellerId;
 }

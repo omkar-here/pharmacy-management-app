@@ -12,9 +12,8 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -25,19 +24,18 @@ import lombok.ToString;
 @ToString
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "orders")
-public class Order {
+@Table(uniqueConstraints = {
+        @UniqueConstraint(columnNames = "username")
+})
+public class Employee {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id; 
+    private Integer id;
+    private String name;
+    private String username;
+    private String password;
     @Enumerated(EnumType.STRING)
-    private OrderType type;
-    @ManyToOne
-    @JoinColumn(name = "customer_id")
-    private Client customerId;
-    @ManyToOne
-    @JoinColumn(name = "employee_id")
-    private Employee employeeId;
+    private EmployeeRole role;
 
     @Column(name = "created_at", updatable = false, nullable = false)
     @CreationTimestamp
