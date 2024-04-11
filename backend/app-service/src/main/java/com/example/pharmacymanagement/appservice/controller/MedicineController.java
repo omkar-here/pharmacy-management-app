@@ -1,8 +1,8 @@
 package com.example.pharmacymanagement.appservice.controller;
 
-import java.util.List;
-
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.example.pharmacymanagement.appservice.dto.Response;
 import com.example.pharmacymanagement.appservice.entity.Medicine;
 import com.example.pharmacymanagement.appservice.repository.MedicineRepo;
 
@@ -23,56 +24,91 @@ public class MedicineController {
     MedicineRepo medicineRepo;
 
     @GetMapping("/medicines")
-    public ResponseEntity<List<Medicine>> getMedicines(@RequestParam(required = false) Integer page, @RequestParam(required = false) Integer size) {
-        if(size != null && (size<10 || size>50)) throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Size should be between 10 and 50");
-        if(size == null) size = 10;
-        if(page != null) ResponseEntity.ok(medicineRepo.findAll().subList(page * size, (page + 1) * size));
-        return ResponseEntity.ok(medicineRepo.findAll());
+    public ResponseEntity<Response> getMedicines(@RequestParam(required = false) Integer page,
+            @RequestParam(required = false) Integer size) {
+        if (size != null && (size < 10 || size > 50))
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Size should be between 10 and 50");
+        if (page != null && page < 0)
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Page should be greater than or equal to 0");
+        if (size == null)
+            size = 10;
+        if (page == null)
+            page = 0;
+        Page<Medicine> medicines = medicineRepo.findAll(PageRequest.of(page, size));
+        return ResponseEntity.ok(Response.builder()
+                .data(medicines.getContent())
+                .page(page)
+                .size(size)
+                .totalPages(medicines.getTotalPages())
+                .hasNext(medicines.hasNext())
+                .hasPrevious(medicines.hasPrevious())
+                .build());
     }
 
     @GetMapping("/medicine/{id}")
-    public ResponseEntity<Medicine> getMedicineById(Integer id) {
-        return ResponseEntity.ok(medicineRepo.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
-                        "Medicine with id: " + id + " not found")));
+    public ResponseEntity<Response> getMedicineById(Integer id) {
+        return ResponseEntity.ok(Response.builder()
+                .data(medicineRepo.findById(id)
+                        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                                "Medicine with id: " + id + " not found")))
+                .build());
     }
 
     @GetMapping("/medicine/search")
-    public ResponseEntity<List<Medicine>> searchMedicine(@RequestParam String name, @RequestParam String type) {
-        if(name.isBlank()) throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Name cannot be blank");
-        if(name.length() < 3) throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Name should be at least 3 characters long");
+    public ResponseEntity<Response> searchMedicine(@RequestParam String name, @RequestParam String type) {
+        if (name.isBlank())
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Name cannot be blank");
+        if (name.length() < 3)
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Name should be at least 3 characters long");
         String queryName = "%" + name + "%";
-        if(type.isBlank() || type.equalsIgnoreCase("all")) {
-            return ResponseEntity.ok(medicineRepo.findByNameLikeIgnoreCase(queryName).stream().limit(10).toList());
+        if (type.isBlank() || type.equalsIgnoreCase("all")) {
+            Page<Medicine> medicines = medicineRepo.findByNameLikeIgnoreCase(queryName, PageRequest.of(0, 10));
+            return ResponseEntity.ok(Response.builder()
+                    .data(medicines.getContent())
+                    .build());
         } else {
-            return ResponseEntity.ok(medicineRepo.findByNameLikeIgnoreCaseAndType(queryName, type).stream().limit(10).toList());
+            Page<Medicine> medicines = medicineRepo.findByNameLikeIgnoreCaseAndType(queryName, type,
+                    PageRequest.of(0, 10));
+            return ResponseEntity.ok(Response.builder()
+                    .data(medicines.getContent())
+                    .build());
         }
     }
 
     @PostMapping("/medicine")
-    public ResponseEntity<Medicine> addMedicine(@RequestBody Medicine medicine) {
-        if(medicineRepo.existsByNameAndBrand(medicine.getName(), medicine.getBrand())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Medicine with name: " + medicine.getName() + " and brand: " + medicine.getBrand() + " already exists");
+    public ResponseEntity<Response> addMedicine(@RequestBody Medicine medicine) {
+        if (medicineRepo.existsByNameAndBrand(medicine.getName(), medicine.getBrand())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Medicine with name: " + medicine.getName()
+                    + " and brand: " + medicine.getBrand() + " already exists");
         }
         medicineRepo.save(medicine);
-        return ResponseEntity.ok(medicine);
+        return ResponseEntity.ok(Response.builder()
+                .data("Medicine added successfully")
+                .build());
     }
 
     @PatchMapping("/medicine/{id}")
-    public ResponseEntity<Medicine> updateMedicine(@RequestBody Medicine medicine, @RequestParam Integer id) {
+    public ResponseEntity<Response> updateMedicine(@RequestBody Medicine medicine, @RequestParam Integer id) {
         Medicine existingMedicine = medicineRepo.findById(id).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Medicine with id: " + id + " not found")
-        );
-        if(!medicine.getName().isBlank()) existingMedicine.setName(medicine.getName());
-        if(!medicine.getBrand().isBlank()) existingMedicine.setBrand(medicine.getBrand());
-        if(!medicine.getType().isBlank()) existingMedicine.setType(medicine.getType());
-        return ResponseEntity.ok(medicineRepo.save(existingMedicine));
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Medicine with id: " + id + " not found"));
+        if (medicine.getName() != null && !medicine.getName().isBlank())
+            existingMedicine.setName(medicine.getName());
+        if (medicine.getBrand() != null && !medicine.getBrand().isBlank())
+            existingMedicine.setBrand(medicine.getBrand());
+        if (medicine.getType() != null && !medicine.getType().isBlank())
+            existingMedicine.setType(medicine.getType());
+        return ResponseEntity.ok(Response.builder()
+                .data("Medicine with id: " + id + " updated successfully")
+                .build());
     }
 
     @DeleteMapping("/medicine/{id}")
-    public ResponseEntity<String> deleteMedicine(@RequestParam Integer id) {
-        if(!medicineRepo.existsById(id)) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Medicine with id: " + id + " not found");
+    public ResponseEntity<Response> deleteMedicine(@RequestParam Integer id) {
+        if (!medicineRepo.existsById(id))
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Medicine with id: " + id + " not found");
         medicineRepo.deleteById(id);
-        return ResponseEntity.ok("Medicine with id: " + id + " deleted successfully");
+        return ResponseEntity.ok(Response.builder()
+                .data("Medicine with id: " + id + " deleted successfully")
+                .build());
     }
 }
