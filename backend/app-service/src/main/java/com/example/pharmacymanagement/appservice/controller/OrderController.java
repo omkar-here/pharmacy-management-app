@@ -52,8 +52,8 @@ public class OrderController {
         if (order.getType() == null)
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Order type is required");
         Order newOrder = Order.builder()
-                .customerId(client)
-                .employeeId(employee)
+                .customerId(client.getId())
+                .employeeId(employee.getId())
                 .type(order.getType())
                 .build();
         orderRepo.save(newOrder);

@@ -16,6 +16,6 @@ public class OrderItemDto {
     private Integer medicineId;
     private LocalDate expiryDate;
     private Integer sellerId;
-    private Integer BatchNumber;
+    private Integer batchNumber;
     private Double price;
 }

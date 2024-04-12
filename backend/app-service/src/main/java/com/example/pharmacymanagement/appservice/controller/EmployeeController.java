@@ -24,6 +24,14 @@ public class EmployeeController {
     @Autowired
     EmployeeRepo employeeRepo;
 
+    /*
+     * GET /employees - Response ok paginated
+     * GET /employee/{id} - Response ok
+     * POST /employee - Response ok
+     * PATCH /employee/{id} - Response ok
+     * DELETE /employee/{id} - Response ok
+     */
+
     @GetMapping("/employees")
     public ResponseEntity<Response> getEmployees(@RequestParam(required = false) Integer page,
             @RequestParam(required = false) Integer size) {

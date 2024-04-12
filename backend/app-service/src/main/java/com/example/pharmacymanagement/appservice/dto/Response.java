@@ -9,7 +9,7 @@ import lombok.ToString;
 @Data
 @ToString
 @Builder
-@JsonInclude(JsonInclude.Include.NON_DEFAULT)
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class Response {
     private Object data;
     private Integer page;

@@ -34,12 +34,10 @@ public class Order {
     private Integer id;
     @Enumerated(EnumType.STRING)
     private OrderType type;
-    @ManyToOne
-    @JoinColumn(name = "customer_id")
-    private Client customerId;
-    @ManyToOne
-    @JoinColumn(name = "employee_id")
-    private Employee employeeId;
+    private Integer customerId;
+    private Integer employeeId;
+    @Enumerated(EnumType.STRING) 
+    private OrderStatus status;
 
     @Column(name = "created_at", updatable = false, nullable = false)
     @CreationTimestamp

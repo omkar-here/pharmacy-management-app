@@ -3,18 +3,20 @@ import java.time.LocalDate;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
 import com.example.pharmacymanagement.appservice.entity.Inventory;
 import com.example.pharmacymanagement.appservice.entity.Medicine;
 
+@Repository
 public interface InventoryRepo extends JpaRepository<Inventory, Integer> {
 
-    boolean existsByMedicineId(Medicine medicineId);
+    boolean existsByMedicineId(Integer medicineId);
 
-    List<Inventory> findByMedicineIdAndExpiryDateGreaterThanOrderByExpiryDateAsc(Medicine medicineId, LocalDate now);
+    List<Inventory> findByMedicineIdAndExpiryDateGreaterThanOrderByExpiryDateAsc(Integer medicineId, LocalDate now);
 
-    boolean existsByMedicineIdAndBatchNoAndSellerId(Medicine medicine, Integer batchNo, Integer sellerId);
+    boolean existsByMedicineIdAndBatchNumberAndSellerId(Integer medicine, Integer batchNumber, Integer sellerId);
 
-    Inventory findByMedicineIdAndBatchNoAndSellerId(Medicine medicine, Integer batchNo, Integer sellerId);
+    Inventory findByMedicineIdAndBatchNumberAndSellerId(Integer medicine, Integer batchNumber, Integer sellerId);
     
 }

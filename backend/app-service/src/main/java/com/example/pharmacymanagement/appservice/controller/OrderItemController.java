@@ -2,15 +2,19 @@ package com.example.pharmacymanagement.appservice.controller;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -21,6 +25,7 @@ import com.example.pharmacymanagement.appservice.entity.Inventory;
 import com.example.pharmacymanagement.appservice.entity.Medicine;
 import com.example.pharmacymanagement.appservice.entity.Order;
 import com.example.pharmacymanagement.appservice.entity.OrderItem;
+import com.example.pharmacymanagement.appservice.entity.OrderStatus;
 import com.example.pharmacymanagement.appservice.entity.OrderType;
 import com.example.pharmacymanagement.appservice.repository.ClientRepo;
 import com.example.pharmacymanagement.appservice.repository.InventoryRepo;
@@ -65,7 +70,7 @@ public class OrderItemController {
                         "Medicine with id: " + orderItem.getMedicineId() + " not found"));
         if (order.getType() == OrderType.OUTGOING) {
             List<Inventory> inventories = inventoryRepo.findByMedicineIdAndExpiryDateGreaterThanOrderByExpiryDateAsc(
-                    medicine, LocalDate.now());
+                    medicine.getId(), LocalDate.now());
             Integer InvQuantity = inventories.stream().map(Inventory::getQuantity).reduce(0, Integer::sum);
             if (InvQuantity < orderItem.getQuantity())
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Not enough quantity available.");
@@ -73,13 +78,12 @@ public class OrderItemController {
                 if (orderItem.getQuantity() > 0) {
                     Integer quantity = Math.min(orderItem.getQuantity(), inv.getQuantity());
                     OrderItem newOrderItem = OrderItem.builder()
-                            .orderId(order)
-                            .inventoryId(inv)
+                            .orderId(order.getId())
+                            .inventoryId(inv.getId())
                             .quantity(quantity)
                             .price(inv.getPrice())
                             .build();
                     orderItemRepo.save(newOrderItem);
-                    inv.setQuantity(inv.getQuantity() - quantity);
                     orderItem.setQuantity(orderItem.getQuantity() - quantity);
                 } else
                     break;
@@ -96,15 +100,15 @@ public class OrderItemController {
             Client client = clientRepo.findById(orderItem.getSellerId())
                     .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
                             "Client with id: " + orderItem.getSellerId() + " not found"));
-            if (inventoryRepo.existsByMedicineIdAndBatchNoAndSellerId(medicine, orderItem.getBatchNumber(),
+            if (inventoryRepo.existsByMedicineIdAndBatchNumberAndSellerId(medicine.getId(), orderItem.getBatchNumber(),
                     orderItem.getSellerId())) {
-                Inventory inventory = inventoryRepo.findByMedicineIdAndBatchNoAndSellerId(medicine,
+                Inventory inventory = inventoryRepo.findByMedicineIdAndBatchNumberAndSellerId(medicine.getId(),
                         orderItem.getBatchNumber(), orderItem.getSellerId());
                 inventory.setQuantity(inventory.getQuantity() + orderItem.getQuantity());
-                inventoryRepo.save(inventory);
+                inventory = inventoryRepo.save(inventory);
                 OrderItem newOrderItem = OrderItem.builder()
-                        .orderId(order)
-                        .inventoryId(inventory)
+                        .orderId(order.getId())
+                        .inventoryId(inventory.getId())
                         .quantity(orderItem.getQuantity())
                         .price(inventory.getPrice())
                         .build();
@@ -113,17 +117,17 @@ public class OrderItemController {
                         .build());
             } else {
                 Inventory inventory = Inventory.builder()
-                        .medicineId(medicine)
+                        .medicineId(medicine.getId())
                         .batchNumber(orderItem.getBatchNumber())
                         .expiryDate(orderItem.getExpiryDate())
                         .price(orderItem.getPrice())
                         .quantity(orderItem.getQuantity())
-                        .sellerId(client)
+                        .sellerId(client.getId())
                         .build();
-                inventoryRepo.save(inventory);
+                inventory = inventoryRepo.save(inventory);
                 OrderItem newOrderItem = OrderItem.builder()
-                        .orderId(order)
-                        .inventoryId(inventory)
+                        .orderId(order.getId())
+                        .inventoryId(inventory.getId())
                         .quantity(orderItem.getQuantity())
                         .price(orderItem.getPrice())
                         .build();
@@ -135,15 +139,72 @@ public class OrderItemController {
         }
     }
 
+    @Transactional
     @GetMapping("/order/{id}/items")
     public ResponseEntity<Response> getItems(@PathVariable Integer id) {
         Order order = orderRepo.findById(id)
                 .orElseThrow(
                         () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Order with id: " + id + " not found"));
-        List<OrderItem> orderItems = orderItemRepo.findByOrderId(order);
+        List<OrderItem> orderItems = orderItemRepo.findAllByOrderId(order.getId());
+        List<OrderItemDto> orderItemsDto = orderItems.stream().map((orderItem) -> {
+                Inventory inv = inventoryRepo.findById(orderItem.getInventoryId())
+                        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                                "Inventory with id: " + orderItem.getInventoryId() + " not found"));
+                return OrderItemDto.builder()
+                        .quantity(orderItem.getQuantity())
+                        .medicineId(inv.getMedicineId())
+                        .expiryDate(inv.getExpiryDate())
+                        .sellerId(inv.getSellerId())
+                        .batchNumber(inv.getBatchNumber())
+                        .price(inv.getPrice())
+                        .build();
+        }).collect(Collectors.toList());
         return ResponseEntity.ok(Response.builder()
-                .data(orderItems)
+                .data(orderItemsDto)
                 .build());
     }
 
+    @Transactional
+    @DeleteMapping("/order/{id}/item/{itemId}")
+    public ResponseEntity<Response> deleteItem(@PathVariable Integer id, @PathVariable Integer itemId) {
+        Order order = orderRepo.findById(id)
+                .orElseThrow(
+                        () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Order with id: " + id + " not found"));
+        if(order.getStatus() != OrderStatus.ONGOING) throw new ResponseStatusException(HttpStatus.NOT_ACCEPTABLE, "Order is already " + order.getStatus());
+        OrderItem orderItem = orderItemRepo.findByIdAndOrderId(itemId, order.getId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                        "Order item with id: " + itemId + " not found"));
+        if(order.getType() == OrderType.OUTGOING){
+                orderRepo.deleteById(orderItem.getId());
+                return ResponseEntity.ok(Response.builder()
+                        .build());
+        } else {
+                Inventory inventory = inventoryRepo.findById(orderItem.getInventoryId())
+                        .orElseThrow(()-> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Inventory with id: " + orderItem.getInventoryId() + " not found"));
+                // Handle if item added via ongoing order if removed
+                return ResponseEntity.ok(Response.builder().build());
+        }}
+
+        @PatchMapping("/order/{id}/item/{itemId}")
+        public ResponseEntity<Response> updateItem(@PathVariable Integer id, @PathVariable Integer itemId, @RequestBody  OrderItemDto bodyOrderItem){
+                Order order = orderRepo.findById(id)
+                .orElseThrow(
+                        () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Order with id: " + id + " not found"));
+        if(order.getStatus() != OrderStatus.ONGOING) throw new ResponseStatusException(HttpStatus.NOT_ACCEPTABLE, "Order is already " + order.getStatus());
+        OrderItem orderItem = orderItemRepo.findByIdAndOrderId(itemId, order.getId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                        "Order item with id: " + itemId + " not found"));
+        Inventory inv = inventoryRepo.findById(orderItem.getInventoryId())
+                        .orElseThrow(()->new ResponseStatusException(HttpStatus.BAD_REQUEST, "Inventory with id : "+ orderItem.getInventoryId() + " not found"));
+                
+        // if(order.getType() == OrderType.OUTGOING){
+        //         if(bodyOrderItem.getQuantity().equals(orderItem.getQuantity())){
+                        
+        //         }
+        // }
+        // else {}
+        // }
+                return ResponseEntity.ok(Response.builder().build());
+
+}
 }

@@ -28,12 +28,8 @@ public class OrderItem {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
-    @ManyToOne
-    @JoinColumn(name = "order_id")
-    private Order orderId;
-    @ManyToOne
-    @JoinColumn(name = "inventory_id")
-    private Inventory inventoryId;
+    private Integer orderId;
+    private Integer inventoryId;
     private Integer quantity;
     private Double price;
 

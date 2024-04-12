@@ -4,6 +4,7 @@ import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -26,16 +27,16 @@ public class JWTController {
     private EmployeeRepo employeeRepo;
 
     @GetMapping("/authtoken")
-    public Response getAuthToken(){
-        // @CookieValue("refreshToken") String token) {
-        // if(token.isBlank() || !jwtService.validateRefreshToken(token)) 
-        //     throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid refresh token");
-        // Integer id = (Integer)jwtService.getClaimsFromToken(token, true).get("id");
-        // Optional<Employee> emp = employeeRepo.findById(id);
-        // if(emp.isEmpty()) 
-        //     throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid refresh token");
-        // return jwtService.createAuthToken(emp.get().getUsername(), emp.get().getId(), emp.get().getRole());
-        return Response.builder().data("authToken").build();
+    public ResponseEntity<Response> getAuthToken(
+        @CookieValue("refreshToken") String token) {
+        if(token.isBlank() || !jwtService.validateRefreshToken(token)) 
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid refresh token");
+        Integer id = (Integer)jwtService.getClaimsFromToken(token, true).get("id");
+        Employee emp = employeeRepo.findById(id)
+            .orElseThrow(
+                ()-> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Employee not found"));
+        return ResponseEntity.ok(
+        Response.builder().data(jwtService.createAuthToken(emp.getUsername(), emp.getId(), emp.getRole())).build());
     }
     
 }

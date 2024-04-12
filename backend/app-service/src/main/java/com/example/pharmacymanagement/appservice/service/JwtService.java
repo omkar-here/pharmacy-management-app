@@ -18,13 +18,13 @@ import io.jsonwebtoken.security.Keys;
 @Component
 @PropertySource("classpath:application.properties")
 public class JwtService {
-    @Value("${auth.secret}")
+    // @Value("${auth.secret}")
     private static String AUTH_SECRET;
-    @Value("${refresh.secret}")
+    // @Value("${refresh.secret}")
     private static String REFRESH_SECRET;
-    @Value("${auth.validity}")
+    // @Value("${auth.validity}")
     private static int AUTH_VALIDITY;
-    @Value("${refresh.validity}")
+    // @Value("${refresh.validity}")
     private static int REFRESH_VALIDITY;
 
     public String createAuthToken(String username, Integer id, EmployeeRole role) {
