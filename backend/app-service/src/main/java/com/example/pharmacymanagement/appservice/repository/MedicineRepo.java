@@ -16,5 +16,7 @@ public interface MedicineRepo extends JpaRepository<Medicine, Integer> {
     List<Medicine> findByNameLikeIgnoreCase(String name);
     Page<Medicine> findByNameLikeIgnoreCase(String queryName, PageRequest of);
     Page<Medicine> findByNameLikeIgnoreCaseAndType(String queryName, String type, PageRequest of);
+    boolean existsByNameIgnoreCaseAndBrandIgnoreCase(String name, String brand);
+    Page<Medicine> findByNameLikeIgnoreCaseAndTypeIgnoreCase(String queryName, String type, PageRequest of);
 } 
 

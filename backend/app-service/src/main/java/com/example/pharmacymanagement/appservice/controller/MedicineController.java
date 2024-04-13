@@ -1,5 +1,7 @@
 package com.example.pharmacymanagement.appservice.controller;
 
+import java.util.Objects;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -8,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -24,28 +27,24 @@ import com.example.pharmacymanagement.appservice.repository.MedicineRepo;
 public class MedicineController {
 
     /*
-        GET /medicine Response paginated
-        GET /medicine/{id} Response medicine
-        GET /medicine/search?name={name}&type={type} Response paginated
-        POST /medicine Response ok
-        PATCH /medicine/{id} Response ok
-        DELETE /medicine/{id} Response ok
-    */
+     * GET /medicine Response paginated
+     * GET /medicine/{id} Response medicine
+     * GET /medicine/search?name={name}&type={type} Response paginated
+     * POST /medicine Response ok
+     * PATCH /medicine/{id} Response ok
+     * DELETE /medicine/{id} Response ok
+     */
 
     @Autowired
     MedicineRepo medicineRepo;
 
-    @GetMapping("/")
-    public ResponseEntity<Response> getMedicines(@RequestParam(required = false) Integer page,
-            @RequestParam(required = false) Integer size) {
-        if (size != null && (size < 10 || size > 50))
+    @GetMapping("/all")
+    public ResponseEntity<Response> getMedicines(@RequestParam(defaultValue = "0", required = false) Integer page,
+            @RequestParam(defaultValue = "10", required = false) Integer size) {
+        if (size < 10 || size > 50)
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Size should be between 10 and 50");
-        if (page != null && page < 0)
+        if (page < 0)
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Page should be greater than or equal to 0");
-        if (size == null)
-            size = 10;
-        if (page == null)
-            page = 0;
         Page<Medicine> medicines = medicineRepo.findAll(PageRequest.of(page, size));
         return ResponseEntity.ok(Response.builder()
                 .data(medicines.getContent())
@@ -58,7 +57,7 @@ public class MedicineController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Response> getMedicineById(Integer id) {
+    public ResponseEntity<Response> getMedicineById(@PathVariable Integer id) {
         return ResponseEntity.ok(Response.builder()
                 .data(medicineRepo.findById(id)
                         .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
@@ -67,8 +66,9 @@ public class MedicineController {
     }
 
     @GetMapping("/search")
-    public ResponseEntity<Response> searchMedicine(@RequestParam String name, @RequestParam String type) {
-        if (name.isBlank())
+    public ResponseEntity<Response> searchMedicine(@RequestParam String name,
+            @RequestParam(defaultValue = "all") String type) {
+        if (Objects.isNull(name) || name.isBlank())
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Name cannot be blank");
         if (name.length() < 3)
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Name should be at least 3 characters long");
@@ -79,7 +79,7 @@ public class MedicineController {
                     .data(medicines.getContent())
                     .build());
         } else {
-            Page<Medicine> medicines = medicineRepo.findByNameLikeIgnoreCaseAndType(queryName, type,
+            Page<Medicine> medicines = medicineRepo.findByNameLikeIgnoreCaseAndTypeIgnoreCase(queryName, type,
                     PageRequest.of(0, 10));
             return ResponseEntity.ok(Response.builder()
                     .data(medicines.getContent())
@@ -87,35 +87,45 @@ public class MedicineController {
         }
     }
 
-    @PostMapping("/")
-    public ResponseEntity<Response> addMedicine(@RequestBody Medicine medicine) {
-        if (medicineRepo.existsByNameAndBrand(medicine.getName(), medicine.getBrand())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Medicine with name: " + medicine.getName()
-                    + " and brand: " + medicine.getBrand() + " already exists");
+    @PostMapping("/add")
+    public ResponseEntity<Response> addMedicine(@RequestBody Medicine medicineBody) {
+        if (Objects.isNull(medicineBody.getName()) || Objects.isNull(medicineBody.getBrand())
+                || Objects.isNull(medicineBody.getType()) ||
+                medicineBody.getName().isBlank() || medicineBody.getBrand().isBlank()
+                || medicineBody.getType().isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Name, brand and type cannot be blank");
         }
-        medicineRepo.save(medicine);
+        if (medicineRepo.existsByNameIgnoreCaseAndBrandIgnoreCase(medicineBody.getName(), medicineBody.getBrand())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Medicine with name: " + medicineBody.getName()
+                    + " and brand: " + medicineBody.getBrand() + " already exists");
+        }
+        medicineRepo.save(medicineBody);
         return ResponseEntity.ok(Response.builder()
                 .data("Medicine added successfully")
                 .build());
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<Response> updateMedicine(@RequestBody Medicine medicine, @RequestParam Integer id) {
+    public ResponseEntity<Response> updateMedicine(@RequestBody Medicine medicineBody, @PathVariable Integer id) {
         Medicine existingMedicine = medicineRepo.findById(id).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Medicine with id: " + id + " not found"));
-        if (medicine.getName() != null && !medicine.getName().isBlank())
-            existingMedicine.setName(medicine.getName());
-        if (medicine.getBrand() != null && !medicine.getBrand().isBlank())
-            existingMedicine.setBrand(medicine.getBrand());
-        if (medicine.getType() != null && !medicine.getType().isBlank())
-            existingMedicine.setType(medicine.getType());
+        if (!Objects.isNull(medicineBody.getName()) && !medicineBody.getName().isBlank()) {
+            existingMedicine.setName(medicineBody.getName());
+        }
+        if (!Objects.isNull(medicineBody.getBrand()) && !medicineBody.getBrand().isBlank()) {
+            existingMedicine.setBrand(medicineBody.getBrand());
+        }
+        if (!Objects.isNull(medicineBody.getType()) && !medicineBody.getType().isBlank()) {
+            existingMedicine.setType(medicineBody.getType());
+        }
+        medicineRepo.save(existingMedicine);
         return ResponseEntity.ok(Response.builder()
                 .data("Medicine with id: " + id + " updated successfully")
                 .build());
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Response> deleteMedicine(@RequestParam Integer id) {
+    public ResponseEntity<Response> deleteMedicine(@PathVariable Integer id) {
         if (!medicineRepo.existsById(id))
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Medicine with id: " + id + " not found");
         medicineRepo.deleteById(id);
