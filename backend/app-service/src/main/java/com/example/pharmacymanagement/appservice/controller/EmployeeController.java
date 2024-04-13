@@ -1,5 +1,7 @@
 package com.example.pharmacymanagement.appservice.controller;
 
+import java.util.Objects;
+
 import org.mindrot.jbcrypt.BCrypt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -35,17 +37,13 @@ public class EmployeeController {
      * DELETE /employee/{id} - Response ok
      */
 
-    @GetMapping("/")
-    public ResponseEntity<Response> getEmployees(@RequestParam(required = false) Integer page,
-            @RequestParam(required = false) Integer size) {
-        if (size != null && (size < 10 || size > 50))
+    @GetMapping("/all")
+    public ResponseEntity<Response> getEmployees(@RequestParam(defaultValue = "0", required = false) Integer page,
+            @RequestParam(defaultValue = "10", required = false) Integer size) {
+        if (size < 10 || size > 50)
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Size should be between 10 and 50");
-        if (page != null && page < 0)
+        if (page < 0)
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Page should be greater than or equal to 0");
-        if (size == null)
-            size = 10;
-        if (page == null)
-            page = 0;
         Page<Employee> employees = employeeRepo.findAll(PageRequest.of(page, size));
         return ResponseEntity.ok(Response.builder()
                 .data(employees.getContent())
@@ -66,10 +64,14 @@ public class EmployeeController {
                 .build());
     }
 
-    @PostMapping("/")
+    @PostMapping("/add")
     public ResponseEntity<Response> addEmployee(@RequestBody Employee employee) {
-        if (employee.getName() == null || employee.getPassword() == null || employee.getUsername() == null || employee.getRole()  == null)
+        if (Objects.isNull(employee.getName()) || Objects.isNull(employee.getPassword()) ||
+                Objects.isNull(employee.getUsername()) || Objects.isNull(employee.getRole()) ||
+                employee.getName().isBlank() || employee.getPassword().isBlank() || employee.getUsername().isBlank())
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid employee data");
+        if (employeeRepo.existsByUsername(employee.getUsername()))
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Employee already exists");
         employee.setPassword(BCrypt.hashpw(employee.getPassword(), BCrypt.gensalt()));
         employeeRepo.save(employee);
         return ResponseEntity.ok(Response.builder()
@@ -82,8 +84,9 @@ public class EmployeeController {
         Employee existingEmployee = employeeRepo.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
                         "Employee with id: " + id + " not found"));
-        if (!employee.getName().isBlank())
+        if (!Objects.isNull(existingEmployee.getName()) && !existingEmployee.getName().isBlank())
             existingEmployee.setName(employee.getName());
+        employeeRepo.save(existingEmployee);
         return ResponseEntity.ok(Response.builder()
                 .data("Employee with id: " + id + " updated")
                 .build());

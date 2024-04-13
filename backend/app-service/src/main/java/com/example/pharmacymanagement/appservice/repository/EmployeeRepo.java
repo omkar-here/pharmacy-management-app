@@ -9,5 +9,7 @@ public interface EmployeeRepo extends JpaRepository<Employee, Integer> {
     Employee findByUsername(String username);
 
     Optional<Employee> findOneByUsername(String username);
+
+    boolean existsByUsername(String username);
     
 }

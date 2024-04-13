@@ -79,7 +79,7 @@ public class AuthController {
                         .build());
             }
         }
-        if (Objects.isNull(employeeBody) || Objects.isNull(employeeBody.getUsername())
+        if (Objects.isNull(employeeBody.getUsername())
                 || Objects.isNull(employeeBody.getPassword()) || employeeBody.getUsername().isBlank()
                 || employeeBody.getPassword().isBlank())
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Required fields are missing");
