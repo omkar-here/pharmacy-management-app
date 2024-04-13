@@ -1,5 +1,6 @@
 package com.example.pharmacymanagement.appservice.controller;
 
+import org.mindrot.jbcrypt.BCrypt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -11,6 +12,7 @@ import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
@@ -20,6 +22,7 @@ import com.example.pharmacymanagement.appservice.dto.Response;
 import com.example.pharmacymanagement.appservice.entity.Employee;
 
 @RestController
+@RequestMapping("/employee")
 public class EmployeeController {
     @Autowired
     EmployeeRepo employeeRepo;
@@ -32,7 +35,7 @@ public class EmployeeController {
      * DELETE /employee/{id} - Response ok
      */
 
-    @GetMapping("/employees")
+    @GetMapping("/")
     public ResponseEntity<Response> getEmployees(@RequestParam(required = false) Integer page,
             @RequestParam(required = false) Integer size) {
         if (size != null && (size < 10 || size > 50))
@@ -54,7 +57,7 @@ public class EmployeeController {
                 .build());
     }
 
-    @GetMapping("/employee/{id}")
+    @GetMapping("/{id}")
     public ResponseEntity<Response> getEmployeeById(@PathVariable Integer id) {
         return ResponseEntity.ok(Response.builder()
                 .data(employeeRepo.findById(id)
@@ -63,14 +66,18 @@ public class EmployeeController {
                 .build());
     }
 
-    @PostMapping("/employee")
+    @PostMapping("/")
     public ResponseEntity<Response> addEmployee(@RequestBody Employee employee) {
+        if (employee.getName() == null || employee.getPassword() == null || employee.getUsername() == null || employee.getRole()  == null)
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid employee data");
+        employee.setPassword(BCrypt.hashpw(employee.getPassword(), BCrypt.gensalt()));
+        employeeRepo.save(employee);
         return ResponseEntity.ok(Response.builder()
                 .data("Employee added successfully")
                 .build());
     }
 
-    @PatchMapping("/employee/{id}")
+    @PatchMapping("/{id}")
     public ResponseEntity<Response> updateEmployee(@RequestBody Employee employee, @PathVariable Integer id) {
         Employee existingEmployee = employeeRepo.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
@@ -82,7 +89,7 @@ public class EmployeeController {
                 .build());
     }
 
-    @DeleteMapping("/employee/{id}")
+    @DeleteMapping("/{id}")
     public ResponseEntity<Response> deleteEmployee(@PathVariable Integer id) {
         if (employeeRepo.existsById(id)) {
             employeeRepo.deleteById(id);

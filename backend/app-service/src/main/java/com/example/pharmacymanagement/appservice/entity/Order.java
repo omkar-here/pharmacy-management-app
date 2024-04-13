@@ -12,8 +12,6 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -37,7 +35,8 @@ public class Order {
     private Integer customerId;
     private Integer employeeId;
     @Enumerated(EnumType.STRING) 
-    private OrderStatus status;
+    @Builder.Default
+    private OrderStatus status = OrderStatus.ONGOING;
 
     @Column(name = "created_at", updatable = false, nullable = false)
     @CreationTimestamp

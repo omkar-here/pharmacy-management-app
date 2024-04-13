@@ -14,7 +14,6 @@ import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -84,6 +83,8 @@ public class OrderItemController {
                             .price(inv.getPrice())
                             .build();
                     orderItemRepo.save(newOrderItem);
+                    inv.setQuantity(inv.getQuantity() - quantity);
+                    inventoryRepo.save(inv);
                     orderItem.setQuantity(orderItem.getQuantity() - quantity);
                 } else
                     break;

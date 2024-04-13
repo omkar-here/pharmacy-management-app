@@ -33,6 +33,8 @@ public class Inventory {
     private LocalDate expiryDate;
     private Integer medicineId;
     private Integer sellerId;
+    @Builder.Default
+    private Boolean staged = true;
 
     @Column(name = "created_at", updatable = false, nullable = false)
     @CreationTimestamp

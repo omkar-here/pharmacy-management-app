@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
@@ -21,6 +22,7 @@ import com.example.pharmacymanagement.appservice.entity.Client;
 import com.example.pharmacymanagement.appservice.repository.ClientRepo;
 
 @RestController
+@RequestMapping("/client")
 public class ClientController {
     /*
      * POST /client - response ok
@@ -40,7 +42,7 @@ public class ClientController {
     @Autowired
     ClientRepo clientRepo;
 
-    @PostMapping("/client")
+    @PostMapping("/")
     public ResponseEntity<Response> addClient(@RequestBody Client client) {
         if (client == null || client.getEmail() == null || client.getPhone() == null ||
                 client.getName() == null || client.getName().isBlank() || client.getEmail().isBlank()
@@ -59,7 +61,7 @@ public class ClientController {
 
     }
 
-    @GetMapping("/clients")
+    @GetMapping("/all")
     public ResponseEntity<Response> getClients(@RequestParam(required = false) Integer page,
             @RequestParam(required = false) Integer size) {
         if (size != null && (size < 10 || size > 50))
@@ -81,7 +83,7 @@ public class ClientController {
                 .build());
     }
 
-    @GetMapping("/client/{id}")
+    @GetMapping("/{id}")
     public ResponseEntity<Response> getClientById(@RequestParam Integer id) {
         return ResponseEntity.ok(Response.builder()
                 .data(clientRepo.findById(id)
@@ -90,7 +92,7 @@ public class ClientController {
                 .build());
     }
 
-    @DeleteMapping("/client/{id}")
+    @DeleteMapping("/{id}")
     public ResponseEntity<Response> deleteClient(@RequestParam Integer id) {
         if (clientRepo.existsById(id)) {
             clientRepo.deleteById(id);
@@ -101,7 +103,7 @@ public class ClientController {
         }
     }
 
-    @GetMapping("/client")
+    @GetMapping("/")
     public ResponseEntity<Response> searchClient(@RequestParam String name) {
         if (name.isBlank())
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Name cannot be blank");
@@ -114,7 +116,7 @@ public class ClientController {
                 .build());
     }
 
-    @PatchMapping("/client/{id}")
+    @PatchMapping("/{id}")
     public ResponseEntity<Response> updateClient(@RequestBody Client client, @RequestParam Integer id) {
         Client existingClient = clientRepo.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,

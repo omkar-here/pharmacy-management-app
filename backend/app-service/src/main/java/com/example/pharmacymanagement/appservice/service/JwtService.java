@@ -4,7 +4,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Component;
 
@@ -19,13 +18,13 @@ import io.jsonwebtoken.security.Keys;
 @PropertySource("classpath:application.properties")
 public class JwtService {
     // @Value("${auth.secret}")
-    private static String AUTH_SECRET;
+    private static String AUTH_SECRET = "9a4f2c8d3b7a1e6f45c8a0b3f267d8b1d4e6f3c8a9d2b5f8e3a9c8b5f6v8a3d9";
     // @Value("${refresh.secret}")
-    private static String REFRESH_SECRET;
+    private static String REFRESH_SECRET = "9a4f2c8d3b7a1e6f75c8a0b3f267d8b1d4e6f3c8a9d2b5f8e3a9c8b5f6v8a3d9";
     // @Value("${auth.validity}")
-    private static int AUTH_VALIDITY;
+    public static int AUTH_VALIDITY = 15;
     // @Value("${refresh.validity}")
-    private static int REFRESH_VALIDITY;
+    public static int REFRESH_VALIDITY = 30;
 
     public String createAuthToken(String username, Integer id, EmployeeRole role) {
         Map<String, Object> claims = new HashMap<>();
@@ -77,8 +76,8 @@ public class JwtService {
         return Jwts.builder()
                 .setClaims(claims)
                 .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(isRefreshToken ? new Date(System.currentTimeMillis() + 1000 * 60 * AUTH_VALIDITY)
-                        : new Date(System.currentTimeMillis() + 1000 * 60 * REFRESH_VALIDITY))
+                .setExpiration(isRefreshToken ? new Date(System.currentTimeMillis() + 1000 * REFRESH_VALIDITY)
+                        : new Date(System.currentTimeMillis() + 1000 * AUTH_VALIDITY))
                 .signWith(
                         Keys.hmacShaKeyFor(Decoders.BASE64.decode(isRefreshToken ? REFRESH_SECRET : AUTH_SECRET)),
                         SignatureAlgorithm.HS256)
