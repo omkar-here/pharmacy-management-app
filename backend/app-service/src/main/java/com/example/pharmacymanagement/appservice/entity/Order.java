@@ -5,6 +5,8 @@ import java.time.LocalDateTime;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -29,20 +31,24 @@ import lombok.ToString;
 public class Order {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private Integer id;
     @Enumerated(EnumType.STRING)
     private OrderType type;
     private Integer customerId;
     private Integer employeeId;
-    @Enumerated(EnumType.STRING) 
+    @Enumerated(EnumType.STRING)
     @Builder.Default
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private OrderStatus status = OrderStatus.ONGOING;
 
     @Column(name = "created_at", updatable = false, nullable = false)
     @CreationTimestamp
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private LocalDateTime createdAt;
 
     @Column(name = "updated_at")
     @UpdateTimestamp
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private LocalDateTime updatedAt;
 }

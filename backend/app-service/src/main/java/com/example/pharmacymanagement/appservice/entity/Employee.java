@@ -43,9 +43,11 @@ public class Employee {
 
     @Column(name = "created_at", updatable = false, nullable = false)
     @CreationTimestamp
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private LocalDateTime createdAt;
 
     @Column(name = "updated_at")
     @UpdateTimestamp
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private LocalDateTime updatedAt;
 }

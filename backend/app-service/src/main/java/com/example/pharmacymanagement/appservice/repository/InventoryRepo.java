@@ -17,5 +17,8 @@ public interface InventoryRepo extends JpaRepository<Inventory, Integer> {
     boolean existsByMedicineIdAndBatchNumberAndSellerId(Integer medicine, Integer batchNumber, Integer sellerId);
 
     Inventory findByMedicineIdAndBatchNumberAndSellerId(Integer medicine, Integer batchNumber, Integer sellerId);
+
+    List<Inventory> findByMedicineIdAndStagedAndExpiryDateGreaterThanOrderByExpiryDateAsc(Integer medicineId, boolean isStaged,
+            LocalDate now);
     
 }

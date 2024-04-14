@@ -15,7 +15,7 @@ public interface OrderRepo extends JpaRepository<Order, Integer> {
 
     Page<Order> findByType(OrderType type, PageRequest of);
 
-    Page<Order> findByStatus(String status, PageRequest of);
+    Page<Order> findByStatus(OrderStatus status, PageRequest of);
 
     List<Order> findByStatusAndUpdatedAtBefore(OrderStatus ongoing, LocalDateTime twoHoursAgo);
 
