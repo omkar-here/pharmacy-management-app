@@ -9,6 +9,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Slice;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -25,6 +26,7 @@ import com.example.pharmacymanagement.appservice.entity.Client;
 import com.example.pharmacymanagement.appservice.repository.ClientRepo;
 
 @RestController
+@CrossOrigin
 @RequestMapping("/client")
 public class ClientController {
     /*
@@ -45,6 +47,7 @@ public class ClientController {
     @Autowired
     ClientRepo clientRepo;
 
+    @CrossOrigin
     @PostMapping("/add")
     public ResponseEntity<Response> addClient(@RequestBody Client clientBody) {
         if (Objects.isNull(clientBody.getEmail()) || Objects.isNull(clientBody.getPhone())
@@ -72,6 +75,7 @@ public class ClientController {
                 .build());
     }
 
+    @CrossOrigin
     @GetMapping("/all")
     public ResponseEntity<Response> getClients(@RequestParam(defaultValue = "0") Integer page,
             @RequestParam(defaultValue = "10") Integer size) {
@@ -92,6 +96,7 @@ public class ClientController {
                 .build());
     }
 
+    @CrossOrigin
     @GetMapping("/{id}")
     public ResponseEntity<Response> getClientById(@PathVariable Integer id) {
         return ResponseEntity.ok(Response.builder()
@@ -101,6 +106,7 @@ public class ClientController {
                 .build());
     }
 
+    @CrossOrigin
     @DeleteMapping("/{id}")
     public ResponseEntity<Response> deleteClient(@PathVariable Integer id) {
         if (clientRepo.existsById(id)) {
@@ -112,6 +118,7 @@ public class ClientController {
         }
     }
 
+    @CrossOrigin
     @GetMapping("/search")
     public ResponseEntity<Response> searchClient(@RequestParam String name) {
         if (name.isBlank())
