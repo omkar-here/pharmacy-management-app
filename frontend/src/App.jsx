@@ -10,12 +10,14 @@ import "./App.css";
 // import AddEmployee from "./components/Employee/AddEmployee";
 import AddMedicine from "./components/Medicine/AddMedicine";
 import ShowMedicine from "./components/Medicine/ShowMedcines";
+import Navbar from "./components/Navbar";
 
 function App() {
 	const [show, setShow] = useState(true);
 
 	return (
 		<div className="container">
+			<Navbar />
 			<Stack spacing={2} direction="row">
 				<Button variant="outlined" onClick={() => setShow(false)}>
 					Add Client
