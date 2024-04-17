@@ -11,7 +11,10 @@ import ShowEmployees from "./components/Employee/ShowEmployees";
 import AddEmployee from "./components/Employee/AddEmployee";
 import AddMedicine from "./components/Medicine/AddMedicine";
 import ShowMedicine from "./components/Medicine/ShowMedcines";
-import HomeLayout from "./components/pages/HomeLayout";
+import HomeLayout from "./pages/HomeLayout";
+import OrderPage from "./pages/OrderPage";
+import Login from "./pages/Login";
+import Register from "./pages/Register";
 
 // function App() {
 // 	const [show, setShow] = useState(true);
@@ -40,22 +43,24 @@ function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<HomeLayout />} />
-          <Route index element={<LandingPage />} />
-          <Route path="order" element={<OrdersPage />}>
-            <Route path="/:id" element={<OrderDetails />} />
+          <Route index element={<Register />} />
+          <Route path="/login" element={<Login />} />
+          {/* <Route index element={<LandingPage />} />       */}
+          <Route path="/order" element={<OrderPage />}>
+            {/* <Route path="/:id" element={<OrderDetails />} /> */}
           </Route>
-          <Route path="clients" element={<ClientsPage />}>
-            <Route path="/add" element={<AddClient />} />
-            <Route path="/:id" element={<ClientDetails />} />
-          </Route>
-          <Route path="employees" element={<EmployeesPage />}>
+          {/* <Route path="clients" element={<ClientPage />}> */}
+          {/* <Route path="/add" element={<AddClient />} />
+            <Route path="/:id" element={<ClientDetails        />} /> */}
+          {/* </Route> */}
+          {/* <Route path="employees" element={<EmployeePage />}>
             <Route path="/add" element={<AddEmployee />} />
             <Route path="/:id" element={<EmployeeDetails />} />
           </Route>
-          <Route path="medicines" element={<MedicinesPage />}>
+          <Route path="medicines" element={<MedicinePage />}>
             <Route path="/add" element={<AddMedicine />} />
-            <Route path="/:id" element={<MedicineDetails />} />
-          </Route>
+            <Route path="/:id" element={<MedicineDetails />} /> */}
+          {/* </Route> */}
         </Routes>
       </BrowserRouter>
     </>

@@ -9,7 +9,7 @@ import {
 } from "@mui/material";
 import { useState } from "react";
 
-export default function AddMedicine() {
+export default function AddOrder() {
   const [name, setName] = useState("");
   const [brand, setBrand] = useState("");
   const [type, setType] = useState("");

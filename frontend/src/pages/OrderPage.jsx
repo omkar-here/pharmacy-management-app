@@ -1,9 +1,8 @@
 // import { Table } from "flowbite-react";
-import SearchBar from "../components/SearchBar";
 import { useCallback, useState } from "react";
-import { TableComponent } from "../components/TableComponent";
+// import { TableComponent } from "../components/TableComponent";
 import useAxiosAuth from "../customHook/useAxiosAuth";
-import ClientPage from "../components/ClientDetails";
+import SearchBar from "../components/Others/SearchBar";
 export default function OrderPage() {
   const api = useAxiosAuth();
   const [search, setSearch] = useState("");
@@ -37,7 +36,7 @@ export default function OrderPage() {
   return (
     <div className="grid grid-cols-2 ">
       {/* <SearchBar /> */}
-      <ClientPage />
+      {/* <ClientPage /> */}
       <div className="flex flex-col gap-6 mt-7 w-full">
         <SearchBar
           searchResults={searchResults}
@@ -47,7 +46,7 @@ export default function OrderPage() {
           setSearch={setSearch}
           search={search}
         />
-        <TableComponent data={searchResults} />
+        {/* <TableComponent data={searchResults} /> */}
       </div>
     </div>
   );

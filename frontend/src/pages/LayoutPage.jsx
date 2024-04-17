@@ -2,9 +2,7 @@
 export default function LayoutPage() {
 return (
 <div>
-    <span>Nav</span>
-    {/* <div><Outlet/></div> */}
-    <span>Footer</span>
+<h1>Layout Page</h1>
 </div>
 )
 }
