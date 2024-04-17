@@ -9,15 +9,15 @@ import { Button } from "@mui/material";
 import Typography from "@mui/material/Typography";
 import { useEffect, useState } from "react";
 
-export default function ShowClient() {
+export default function ShowOrders() {
   const [rows, setRows] = useState([]);
   const [refresh, setRefresh] = useState(false);
-  function createData(client_id, client_name) {
-    return { client_id, client_name };
+  function createData(medicine_id, name, brand, type) {
+    return { medicine_id, name, brand, type };
   }
 
   useEffect(() => {
-    fetch("http://localhost:5432/client/all", {
+    fetch("http://localhost:5432/order/all", {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -25,15 +25,24 @@ export default function ShowClient() {
     })
       .then((response) => response.json())
       .then((data) => {
-        setRows(data.data.map((client) => createData(client.id, client.name)));
+        setRows(
+          data.data.map((medicine) =>
+            createData(
+              medicine.id,
+              medicine.name,
+              medicine.brand,
+              medicine.type
+            )
+          )
+        );
       })
       .catch((error) => {
         console.error("Error:", error);
       });
   }, [refresh]);
 
-  function handleDelete(clientId) {
-    fetch(`http://localhost:5432/client/${clientId}`, {
+  function handleDelete(medicineId) {
+    fetch(`http://localhost:5432/medicine/${medicineId}`, {
       method: "DELETE",
       headers: {
         "Content-Type": "application/json",
@@ -53,19 +62,24 @@ export default function ShowClient() {
       <div>
         <div className="container">
           <Typography component="h1" variant="h6" color="primary" gutterBottom>
-            All Clients
+            All Medicines
           </Typography>
           <div className="card-container">
             {/* here the searchbars will go  */}
           </div>
-          {/* <p className="admin-header">Warehouse Inventory</p> */}
           <TableContainer component={Paper}>
             <Table sx={{ minWidth: 650 }} aria-label="simple table">
               <TableHead>
                 <TableRow>
-                  <TableCell className="table-header">Client ID</TableCell>
+                  <TableCell className="table-header">Medicine ID</TableCell>
                   <TableCell align="right" className="table-header">
                     Name
+                  </TableCell>
+                  <TableCell align="right" className="table-header">
+                    Brand
+                  </TableCell>
+                  <TableCell align="right" className="table-header">
+                    Type
                   </TableCell>
                   <TableCell align="right" className="table-header">
                     Actions
@@ -75,7 +89,7 @@ export default function ShowClient() {
               <TableBody>
                 {rows.map((row) => (
                   <TableRow
-                    key={row.client_id}
+                    key={row.medicine_id}
                     sx={{
                       "&:last-child td, &:last-child th": { border: 0 },
                     }}
@@ -85,13 +99,19 @@ export default function ShowClient() {
                       scope="row"
                       className="table-body"
                     >
-                      {row.client_id}
+                      {row.medicine_id}
                     </TableCell>
                     <TableCell align="right" className="table-body">
-                      {row.client_name}
+                      {row.name}
+                    </TableCell>
+                    <TableCell align="right" className="table-body">
+                      {row.brand}
+                    </TableCell>
+                    <TableCell align="right" className="table-body">
+                      {row.type}
                     </TableCell>
                     <TableCell align="right" className="action-buttons">
-                      <Button onClick={() => handleDelete(row.client_id)}>
+                      <Button onClick={() => handleDelete(row.medicine_id)}>
                         Delete
                       </Button>
                     </TableCell>
