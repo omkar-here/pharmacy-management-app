@@ -39,6 +39,16 @@
             "projectName": "auth-service",
             "args": "",
             "envFile": "${workspaceFolder}/.env"
+        },
+        {
+            "type": "java",
+            "name": "Spring Boot-AppServiceApplication<app-service>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "com.example.pharmacymanagement.appservice.AppServiceApplication",
+            "projectName": "app-service",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
         }
     ]
 }

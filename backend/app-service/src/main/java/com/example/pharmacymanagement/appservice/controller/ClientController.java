@@ -26,7 +26,7 @@ import com.example.pharmacymanagement.appservice.entity.Client;
 import com.example.pharmacymanagement.appservice.repository.ClientRepo;
 
 @RestController
-@CrossOrigin
+@CrossOrigin(origins = "http://localhost:5173/", allowedHeaders = "*")
 @RequestMapping("/client")
 public class ClientController {
     /*

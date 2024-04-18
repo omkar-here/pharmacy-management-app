@@ -27,7 +27,7 @@ import jakarta.servlet.http.HttpServletResponse;
 
 @RestController
 @RequestMapping("/auth")
-@CrossOrigin
+@CrossOrigin(origins = "http://localhost:5173/", allowedHeaders = "*")
 public class AuthController {
     /*
      * POST /login Response authToken
