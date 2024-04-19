@@ -25,7 +25,7 @@ import com.example.pharmacymanagement.appservice.dto.Response;
 import com.example.pharmacymanagement.appservice.entity.Employee;
 
 @RestController
-@CrossOrigin
+@CrossOrigin(origins = "http://localhost:5173/", allowedHeaders = "*")
 @RequestMapping("/employee")
 public class EmployeeController {
     @Autowired
@@ -39,7 +39,6 @@ public class EmployeeController {
      * DELETE /employee/{id} - Response ok
      */
 
-    @CrossOrigin
     @GetMapping("/all")
     public ResponseEntity<Response> getEmployees(@RequestParam(defaultValue = "0", required = false) Integer page,
             @RequestParam(defaultValue = "10", required = false) Integer size) {
@@ -58,7 +57,6 @@ public class EmployeeController {
                 .build());
     }
 
-    @CrossOrigin
     @GetMapping("/{id}")
     public ResponseEntity<Response> getEmployeeById(@PathVariable Integer id) {
         return ResponseEntity.ok(Response.builder()
@@ -68,7 +66,6 @@ public class EmployeeController {
                 .build());
     }
 
-    @CrossOrigin
     @PostMapping("/add")
     public ResponseEntity<Response> addEmployee(@RequestBody Employee employee) {
         if (Objects.isNull(employee.getName()) || Objects.isNull(employee.getPassword()) ||
@@ -84,7 +81,6 @@ public class EmployeeController {
                 .build());
     }
 
-    @CrossOrigin
     @PatchMapping("/{id}")
     public ResponseEntity<Response> updateEmployee(@RequestBody Employee employee, @PathVariable Integer id) {
         Employee existingEmployee = employeeRepo.findById(id)
@@ -98,7 +94,6 @@ public class EmployeeController {
                 .build());
     }
 
-    @CrossOrigin
     @DeleteMapping("/{id}")
     public ResponseEntity<Response> deleteEmployee(@PathVariable Integer id) {
         if (employeeRepo.existsById(id)) {
