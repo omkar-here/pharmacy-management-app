@@ -8,7 +8,7 @@ import {
   InputLabel,
 } from "@mui/material";
 import { useState } from "react";
-
+import medicineImage from "../../assets/medicineImage.png";
 export default function AddOrder() {
   const [name, setName] = useState("");
   const [brand, setBrand] = useState("");
@@ -46,9 +46,9 @@ export default function AddOrder() {
     <Grid className="container" container spacing={2}>
       <Grid item xs={6}>
         {/* Image */}
-        <img
-          className="medicineIcon"
-          src="./public/icon.png"
+        <img 
+          className=" p-4"
+          src={medicineImage}
           alt="Medicine Image"
         />
       </Grid>
