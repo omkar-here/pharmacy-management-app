@@ -13,11 +13,13 @@ import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.example.pharmacymanagement.orderservice.dto.EmployeeRole;
 import com.example.pharmacymanagement.orderservice.dto.Response;
 import com.example.pharmacymanagement.orderservice.entity.Medicine;
 import com.example.pharmacymanagement.orderservice.repository.MedicineRepo;
@@ -88,7 +90,11 @@ public class MedicineController {
     }
 
     @PostMapping("/add")
-    public ResponseEntity<Response> addMedicine(@RequestBody Medicine medicineBody) {
+    public ResponseEntity<Response> addMedicine(
+            @RequestHeader("x-employee-role") EmployeeRole role,
+            @RequestBody Medicine medicineBody) {
+        if (role != EmployeeRole.MANAGER)
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only managers can add medicine");
         if (Objects.isNull(medicineBody.getName()) || Objects.isNull(medicineBody.getBrand())
                 || Objects.isNull(medicineBody.getType()) ||
                 medicineBody.getName().isBlank() || medicineBody.getBrand().isBlank()
@@ -106,7 +112,11 @@ public class MedicineController {
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<Response> updateMedicine(@RequestBody Medicine medicineBody, @PathVariable Integer id) {
+    public ResponseEntity<Response> updateMedicine(
+            @RequestHeader("x-employee-role") EmployeeRole role,
+            @RequestBody Medicine medicineBody, @PathVariable Integer id) {
+        if (role != EmployeeRole.MANAGER)
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only managers can update medicine");
         Medicine existingMedicine = medicineRepo.findById(id).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Medicine with id: " + id + " not found"));
         if (!Objects.isNull(medicineBody.getName()) && !medicineBody.getName().isBlank()) {

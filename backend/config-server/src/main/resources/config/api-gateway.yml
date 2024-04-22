@@ -1,0 +1,55 @@
+spring:
+    cloud:
+        config:
+            enabled: false
+        gateway:
+            discovery:
+                locator:
+                    enabled: true
+            routes:
+                - id: user-service
+                  uri: lb://user-service
+                  predicates:
+                    - Path=/employee/**, /client/**, /auth/**
+                - id: order-service
+                  uri: lb://order-service
+                  predicates:
+                    - Path=/order/**, /medicine/**
+            globalcors:
+                corsConfigurations:
+                    '[/**]':
+                        allowedOrigins: "http://localhost:5173"
+                        allowedMethods: "*"
+                        allowedHeaders: "*"
+                        allowCredentials: true
+
+logging:
+    level:
+        org:
+            springframework:
+                cloud:
+                    gateway: DEBUG
+        reactor:
+            netty:
+                http:
+                    client: DEBUG
+server:
+    error:
+        include-message: always
+
+eureka:
+    client:
+        serviceUrl:
+            defaultZone: http://localhost:8761/eureka/
+
+management:
+    tracing:
+        sampling:
+            probability: 1.0
+    endpoint:
+        gateway:
+            enabled: true
+    endpoints:
+        web:
+            exposure:
+                include: gateway

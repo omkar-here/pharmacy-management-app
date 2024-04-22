@@ -9,11 +9,11 @@ import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
-import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.server.ServerWebExchange;
 
 import com.pharmacymanagement.apigateway.dto.AuthToken;
+import com.pharmacymanagement.apigateway.service.UserService;
 
 import reactor.core.publisher.Mono;
 
@@ -21,7 +21,7 @@ import reactor.core.publisher.Mono;
 public class AuthGlobalFilter implements GlobalFilter {
 
     @Autowired
-    private WebClient.Builder webClientBuilder;
+    private UserService userService;
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
@@ -37,22 +37,19 @@ public class AuthGlobalFilter implements GlobalFilter {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Authorization header is invalid");
         }
         String token = authHeader.substring(7);
-
-        return webClientBuilder.build()
-                .post()
-                .uri("http://user-service/auth/internal/jwtFields/" + token)
-                .retrieve().bodyToMono(AuthToken.class)
-                .map(authToken -> {
-                    if (Objects.isNull(authToken)) {
-                        throw new ResponseStatusException(HttpStatus.FORBIDDEN, "User token expired");
-                    }
-                    exchange.getRequest()
-                            .mutate()
-                            .header("employeeId", String.valueOf(authToken.getId()));
-                    exchange.getRequest()
-                            .mutate()
-                            .header("employeeRole", authToken.getRole().toString());
-                    return exchange;
-                }).flatMap(chain::filter);
+        if (token.isBlank()) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Authorization header is invalid");
+        }
+        AuthToken authToken = userService.getJwtFields(token);
+        if (Objects.isNull(authToken)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "User token expired");
+        }
+        exchange.getRequest()
+                .mutate()
+                .header("x-employee-id", String.valueOf(authToken.getId()));
+        exchange.getRequest()
+                .mutate()
+                .header("x-employee-role", authToken.getRole().toString());
+        return chain.filter(exchange);
     }
 }
