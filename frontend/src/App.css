@@ -1,0 +1,17 @@
+* {
+	margin: 0px;
+	padding: 0px;
+}
+
+body {
+	gap: 20px;
+}
+
+.container {
+	margin: 20px;
+	align-items: center;
+}
+
+.clientIcon {
+	height: 300px;
+}
