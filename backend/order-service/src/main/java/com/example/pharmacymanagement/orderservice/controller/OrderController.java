@@ -35,7 +35,7 @@ import jakarta.transaction.Transactional;
 import jakarta.ws.rs.HeaderParam;
 
 @RestController
-@CrossOrigin(origins = "http://localhost:5173/", allowedHeaders = "*")
+
 @RequestMapping("/order")
 public class OrderController {
     /*
@@ -62,15 +62,16 @@ public class OrderController {
     @Transactional
     @PostMapping("/add")
     public ResponseEntity<Response> addOrder(
-        @RequestBody OrderDto orderBody,
-        @HeaderParam("employeeId") Integer employeeId
-        ) {
+            @RequestBody OrderDto orderBody,
+            @HeaderParam("employeeId") Integer employeeId) {
         if (Objects.isNull(orderBody.getCustomerId()) || Objects.isNull(orderBody.getEmployeeId())
                 || Objects.isNull(orderBody.getType()))
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Required fields missing");
-        if(!userService.findClientById(orderBody.getCustomerId()).blockOptional().orElse(false))
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Client with id: " + orderBody.getCustomerId() + " not found");
-        Optional<Order> existingOrder = orderRepo.findOneByCustomerIdAndStatus(orderBody.getCustomerId(), OrderStatus.ONGOING);
+        if (!userService.findClientById(orderBody.getCustomerId()).blockOptional().orElse(false))
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Client with id: " + orderBody.getCustomerId() + " not found");
+        Optional<Order> existingOrder = orderRepo.findOneByCustomerIdAndStatus(orderBody.getCustomerId(),
+                OrderStatus.ONGOING);
         if (existingOrder.isPresent())
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Client already has an ongoing order");
         Order newOrder = Order.builder()

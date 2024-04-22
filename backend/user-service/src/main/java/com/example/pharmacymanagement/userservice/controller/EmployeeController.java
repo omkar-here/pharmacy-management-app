@@ -25,7 +25,7 @@ import com.example.pharmacymanagement.userservice.dto.Response;
 import com.example.pharmacymanagement.userservice.entity.Employee;
 
 @RestController
-@CrossOrigin(origins = "http://localhost:5173/", allowedHeaders = "*")
+
 @RequestMapping("/employee")
 public class EmployeeController {
     @Autowired

@@ -23,16 +23,16 @@ spring:
                         allowedHeaders: "*"
                         allowCredentials: true
 
-logging:
-    level:
-        org:
-            springframework:
-                cloud:
-                    gateway: DEBUG
-        reactor:
-            netty:
-                http:
-                    client: DEBUG
+# logging:
+#     level:
+#         org:
+#             springframework:
+#                 cloud:
+#                     gateway: DEBUG
+#         reactor:
+#             netty:
+#                 http:
+#                     client: DEBUG
 server:
     error:
         include-message: always

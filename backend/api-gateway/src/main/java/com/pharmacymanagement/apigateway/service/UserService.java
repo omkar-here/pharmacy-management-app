@@ -6,16 +6,17 @@ import org.springframework.web.reactive.function.client.WebClient;
 
 import com.pharmacymanagement.apigateway.dto.AuthToken;
 
+import reactor.core.publisher.Mono;
+
 @Service
 public class UserService {
     @Autowired
     private WebClient.Builder webClientBuilder;
 
-    public AuthToken getJwtFields(String token) {
+    public Mono<AuthToken> getJwtFields(String token) {
         return webClientBuilder.build()
                 .post()
                 .uri("http://user-service/auth/internal/jwtFields/" + token)
-                .retrieve().bodyToMono(AuthToken.class)
-                .block();
+                .retrieve().bodyToMono(AuthToken.class);
     }
 }

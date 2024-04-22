@@ -34,12 +34,12 @@ function Login() {
           password: password,
         })
         .then((response) => {
-          sessionStorage.setItem("token", response.data.authToken);
+          sessionStorage.setItem("token", response.data.data.authToken);
           setLoading(false);
           setError("");
           setSubmitted(false);
           console.log(response);
-            navigate("/dashboard");
+          navigate("/dashboard");
         })
         .catch((error) => {
           console.log(error);

@@ -34,7 +34,7 @@ import com.example.pharmacymanagement.orderservice.repository.OrderRepo;
 import com.example.pharmacymanagement.orderservice.service.UserService;
 
 @RestController
-@CrossOrigin(origins = "http://localhost:5173/", allowedHeaders = "*")
+
 @RequestMapping("/order")
 public class OrderItemController {
         @Autowired

@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.example.pharmacymanagement.userservice.dto.AuthToken;
 import com.example.pharmacymanagement.userservice.dto.Response;
 import com.example.pharmacymanagement.userservice.entity.Employee;
 import com.example.pharmacymanagement.userservice.repository.EmployeeRepo;
@@ -28,7 +29,7 @@ import jakarta.servlet.http.HttpServletResponse;
 
 @RestController
 @RequestMapping("/auth")
-@CrossOrigin(origins = "http://localhost:5173/", allowedHeaders = "*")
+
 public class AuthController {
     /*
      * POST /login Response authToken
@@ -47,8 +48,7 @@ public class AuthController {
     public Optional<Map<String, String>> getJwtFields(@PathVariable String token) {
         if (jwtService.validateAuthToken(token))
             return Optional.of(jwtService.getClaimsFromToken(token, false));
-        else
-            return Optional.empty();
+        throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Invalid token");
     }
 
     // Internal API

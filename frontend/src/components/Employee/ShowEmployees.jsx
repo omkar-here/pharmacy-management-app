@@ -27,10 +27,13 @@ export default function ShowEmployees() {
     //   },
     // })
     api.get("/employee/all")
-      .then((response) => response.json())
       .then((data) => {
-        setRows(
-          data.data.map((employee) => createData(employee.id, employee.name))
+        setRows(test => {
+          console.log(data.data.data)
+          let temp = data.data.data.map((employee) => createData(employee.id, employee.name))
+          console.log(temp)
+          return temp;
+        }
         );
       })
       .catch((error) => {
@@ -39,12 +42,13 @@ export default function ShowEmployees() {
   }, [refresh]);
 
   function handleDelete(employeeId) {
-    fetch(`http://localhost:5432/employee/${employeeId}`, {
-      method: "DELETE",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    })
+    // fetch(`http://localhost:5432/employee/${employeeId}`, {
+    //   method: "DELETE",
+    //   headers: {
+    //     "Content-Type": "application/json",
+    //   },
+    // })
+    api.delete(`/employee/${employeeId}`)
       .then((response) => response.json())
       .then(() => {
         setRefresh(!refresh);

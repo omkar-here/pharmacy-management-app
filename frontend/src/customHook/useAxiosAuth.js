@@ -5,6 +5,7 @@ import axios from "axios";
 const useAxiosAuth = () => {
     const navigate = useNavigate();
     const apiToken = sessionStorage.getItem("token");
+    console.log(apiToken)
     const api = axios.create({
         baseURL: import.meta.env.VITE_BACKEND_URL,
         headers: {
